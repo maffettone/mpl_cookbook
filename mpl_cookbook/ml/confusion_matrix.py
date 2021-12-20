@@ -39,7 +39,7 @@ class ConfusionMatrixDisplay:
         *,
         include_values=True,
         normalize_values=True,
-        cmap="coolwarm",
+        cmap="blues",
         xticks_rotation="horizontal",
         values_format=None,
         ax=None,
@@ -120,4 +120,43 @@ class ConfusionMatrixDisplay:
 
         self.figure_ = fig
         self.ax_ = ax
+        return self.ax_
+
+
+class BatchConfusionMatrix(ConfusionMatrixDisplay):
+    def __init__(self, *, confusion_matrix, stds, display_labels=None):
+        self.stds = stds
+        super(BatchConfusionMatrix, self).__init__(
+            confusion_matrix=confusion_matrix, display_labels=display_labels
+        )
+
+    @classmethod
+    def from_predictions(cls, y_true_array, y_pred_array, **kwargs):
+        from sklearn.metrics import confusion_matrix
+
+        confusion_matrices = []
+        for y_true, y_pred in zip(y_true_array, y_pred_array):
+            norm_matrix = confusion_matrix(y_true, y_pred)
+            norm_matrix = norm_matrix / np.sum(norm_matrix, axis=1)[:, np.newaxis]
+            confusion_matrices.append(norm_matrix)
+        confusion_matrices = np.array(confusion_matrices)
+        means = np.mean(confusion_matrices, axis=0)
+        stds = np.std(confusion_matrices, axis=0)
+        return cls(confusion_matrix=means, stds=stds, **kwargs)
+
+    @classmethod
+    def from_txt(cls, path, **kwargs):
+        raise NotImplementedError
+
+    def plot(self, **kwargs):
+        kwargs.pop("normalize_values", None)
+        kwargs.pop("include_values", None)
+        super().plot(normalize_values=False, include_values=True, **kwargs)
+        for i, j in product(
+            range(self.confusion_matrix.shape[0]), range(self.confusion_matrix.shape[0])
+        ):
+            self.text_[i, j].set_text(
+                f"{self.confusion_matrix[i,j]:.2f} +/- {self.stds[i,j]:.2f}"
+            )
+
         return self.ax_
