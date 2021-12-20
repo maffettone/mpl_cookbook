@@ -113,6 +113,7 @@ def make_categorical_comparison_plot(
         ax.vlines(inds, quartile1, quartile3, color="k", linestyle="-", lw=3)
         ax.vlines(inds, whiskers_min, whiskers_max, color="k", linestyle="-", lw=1)
         legend_artists.append(parts["bodies"][0])
+        offset += 1./(n_color_group+1)
 
     center_points = x_ticks + (n_color_group - 1) / (
         2 * (n_color_group + 1)

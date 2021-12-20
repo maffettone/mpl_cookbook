@@ -66,7 +66,7 @@ def make_categorical_comparison_plot(
     if colors_dict is None:
         colors_dict = {k: f"C{i}" for i, k in enumerate(color_group_list)}
 
-        offset = 0
+    offset = 0
     legend_txt = []
     legend_artists = []
     for color_group in color_group_list:
